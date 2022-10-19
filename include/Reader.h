@@ -2,8 +2,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 
 
 int open_proc_stat();
-int read_proc_stat(char *Buffer, const int n);
+void get_buffer(char ***buffer, size_t *rows);
 int close_proc_stat();
