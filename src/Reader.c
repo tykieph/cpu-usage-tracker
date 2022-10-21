@@ -13,7 +13,7 @@ Output mBuffer;
 int read_proc_stat(char ***buffer, size_t rows, size_t cols);
 void alloc_buffer(char ***buffer, size_t rows, size_t cols);
 void dealloc_buffer(char ***buffer, size_t rows);
-
+int close_proc_stat();
 /********************************************************************************/
 void get_buffer(char ***buffer, size_t *rows)
 {
@@ -21,6 +21,14 @@ void get_buffer(char ***buffer, size_t *rows)
 
     *buffer = mBuffer.data;
     *rows = mBuffer.rows;
+}
+/********************************************************************************/
+void get_buffer_without_header(char ***buffer, size_t *rows)
+{
+    read_proc_stat(&mBuffer.data, mBuffer.rows, mBuffer.cols);
+
+    *buffer = &mBuffer.data[1];
+    *rows = mBuffer.rows - 1;
 }
 /********************************************************************************/
 void alloc_buffer(char ***buffer, size_t rows, size_t cols)
@@ -75,7 +83,21 @@ int read_proc_stat(char ***buffer, size_t rows, size_t cols)
 int close_proc_stat()
 {
     fclose(mFile);
+    mFile = NULL;
+
+    return 0;
+}
+/********************************************************************************/
+void destroy_reader()
+{
+    close_proc_stat();
     dealloc_buffer(&mBuffer.data, mBuffer.rows);
+}
+/********************************************************************************/
+int proc_stat_closed()
+{
+    if (mFile == NULL)
+        return 1;
 
     return 0;
 }

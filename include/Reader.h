@@ -8,4 +8,6 @@
 
 int open_proc_stat();
 void get_buffer(char ***buffer, size_t *rows);
-int close_proc_stat();
+void get_buffer_without_header(char ***buffer, size_t *rows);
+void destroy_reader();
+int proc_stat_closed();

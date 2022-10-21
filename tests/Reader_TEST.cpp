@@ -9,12 +9,15 @@ class ReaderTest : public testing::Test
 {
 public:
     virtual void SetUp()
-    {
+    {     
     }
 
     virtual void TearDown()
     {
     }
+
+protected:
+    char **data;
 };
 
 TEST_F(ReaderTest, Open)
@@ -24,7 +27,6 @@ TEST_F(ReaderTest, Open)
 
 TEST_F(ReaderTest, Read)
 {
-    char **data;
     size_t rows;
     get_buffer(&data, &rows);
 
@@ -34,5 +36,6 @@ TEST_F(ReaderTest, Read)
 
 TEST_F(ReaderTest, Close)
 {
-    EXPECT_EQ(0, close_proc_stat());
+    destroy_reader();
+    EXPECT_EQ(1, proc_stat_closed());
 }

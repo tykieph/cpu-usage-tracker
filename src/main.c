@@ -4,6 +4,7 @@
 #include <signal.h>
 
 #include "Reader.h"
+#include "Analyzer.h"
 
 
 volatile sig_atomic_t stop = 0;
@@ -12,17 +13,25 @@ void *reader_loop()
 {
     while (!stop)
     {
+        // Reader
         char **data;
         size_t rows;
 
-        get_buffer(&data, &rows);
+        get_buffer_without_header(&data, &rows);
+        
+        // Analyzer
+        float *cpusUsage;
+
+        process_data(&data, rows);
+        get_cpus_usage(&cpusUsage, rows);
 
         if (data != NULL && rows > 0)
         {
             for (size_t i = 0; i < rows; i++)
-                printf("%s", data[i]);
+                printf("%lu: %.2f%%\n", i, cpusUsage[i] * 100);
         }
 
+        sleep(1);
         printf("\n\n");
     }
 
@@ -32,7 +41,8 @@ void *reader_loop()
 void cleanup()
 {
     printf("Cleaning up...\n");
-    close_proc_stat();
+    destroy_analyzer();
+    destroy_reader();
 }
 
 void sigint_handler()
