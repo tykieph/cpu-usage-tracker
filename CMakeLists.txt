@@ -26,7 +26,8 @@ find_package(Threads REQUIRED)
 add_executable(CUT
     src/main.c
     src/Reader.c
-    src/Analyzer.c)
+    src/Analyzer.c
+    src/Printer.c)
 target_include_directories(CUT PUBLIC include)
 target_link_libraries(CUT pthread)
 
