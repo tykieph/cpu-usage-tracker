@@ -1,7 +1,5 @@
 #include "Printer.h"
 
-
-
 /********************************************************************************/
 void print_cpus_usage(float **data, const size_t n)
 {

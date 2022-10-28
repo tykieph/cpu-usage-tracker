@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.18.0)
 
 set(CMAKE_C_STANDARD 11)
 
 project(cpu-usage-tracker)
 
-if (Clang)
+if (${CMAKE_C_COMPILER_ID} STREQUAL Clang)
     add_compile_options(-Weverything)
-elseif(GNU)
+elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes")
 endif()
