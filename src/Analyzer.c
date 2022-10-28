@@ -18,8 +18,8 @@ typedef struct
 
 
 size_t mTotalCpus;
-CpuStat *mCpusStat = NULL;
-float *mCpusUsage;
+CpuStat *mCpusStat;
+float *mUsage;
 /********************************************************************************/
 ulong sum_cpustat_idle(const CpuStat *cpu);
 ulong sum_cpustat_non_idle(const CpuStat *cpu);
@@ -41,7 +41,7 @@ void process_line(const char *line, CpuStat *cpu)
     ulong currTotal     = currIdle + currNonIdle;
     
     ulong totalDiff = currTotal - prevTotal;
-    ulong idleDiff = currIdle - prevIdle;
+    ulong idleDiff  = currIdle - prevIdle;
 
     cpu->usage = (float)(totalDiff - idleDiff) / totalDiff;
 }
@@ -53,8 +53,8 @@ void process_data(char ***data, const size_t rows)
         mCpusStat = malloc(rows * sizeof(CpuStat));
 
     // alloc array of floats -> % cpu usage
-    if (mCpusUsage == NULL)
-        mCpusUsage = malloc(rows * sizeof(float));
+    if (mUsage == NULL)
+        mUsage = malloc(rows * sizeof(float));
 
     for (size_t i = 0; i < rows; i++)
     {
@@ -66,10 +66,10 @@ void get_cpus_usage(float **data, const size_t n)
 {
     for (size_t i = 0; i < n; i++)
     {
-        mCpusUsage[i] = (&mCpusStat[i])->usage;
+        mUsage[i] = (&mCpusStat[i])->usage;
     }
 
-    *data = mCpusUsage;
+    *data = mUsage;
 }
 /********************************************************************************/
 ulong sum_cpustat_idle(const CpuStat *cpu)
@@ -87,7 +87,7 @@ ulong sum_cpustat_non_idle(const CpuStat *cpu)
 void destroy_analyzer()
 {
     free(mCpusStat);
-    free(mCpusUsage);
+    free(mUsage);
 }
 /********************************************************************************/
 

@@ -13,7 +13,7 @@ Output mBuffer;
 int read_proc_stat(char ***buffer, size_t rows, size_t cols);
 void alloc_buffer(char ***buffer, size_t rows, size_t cols);
 void dealloc_buffer(char ***buffer, size_t rows);
-int close_proc_stat();
+int close_proc_stat(void);
 /********************************************************************************/
 void get_buffer(char ***buffer, size_t *rows)
 {

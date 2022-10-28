@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
 
+project(cpu-usage-tracker)
+
 if (Clang)
     add_compile_options(-Weverything)
-else()
-    add_compile_options(-Wall -Wextra)
+elseif(GNU)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes")
 endif()
-
-project(cpu-usage-tracker)
 
 include(FetchContent)
 FetchContent_Declare(gtest
