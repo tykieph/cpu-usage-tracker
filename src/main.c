@@ -11,33 +11,91 @@
 
 volatile sig_atomic_t stop = 0;
 
+pthread_cond_t condData;
+pthread_mutex_t mtxData;
+static char **data;
+static size_t rows;
+
+pthread_cond_t condUsage;
+pthread_mutex_t mtxUsage;
+static float *usage;
+
 void *reader_loop()
 {
-    while (!stop)
+    while (1)
     {
-        clock_t start = clock();
-        // Reader
-        char **data;
-        size_t rows;
+        pthread_mutex_lock(&mtxData);
+
+        if (stop)
+        {
+            pthread_mutex_unlock(&mtxData);
+            pthread_cond_signal(&condData);
+
+            return 0;
+        }
 
         get_buffer_without_header(&data, &rows);
-        
-        // Analyzer
-        float *cpusUsage;
+        pthread_mutex_unlock(&mtxData);
+
+        // signal condData condition, that tells Analyzer it can start processing data array
+        pthread_cond_signal(&condData);
+
+        usleep(1000 * 1000);
+    }
+
+    return 0;
+}
+
+void *analyzer_loop()
+{
+    while (1)
+    {
+        pthread_mutex_lock(&mtxData);
+
+        // wait for condData condition 
+        pthread_cond_wait(&condData, &mtxData);
+
+        if (stop)
+        {
+            pthread_mutex_unlock(&mtxData);
+            pthread_cond_signal(&condUsage);
+
+            return 0;
+        }
 
         process_data(&data, rows);
-        get_cpus_usage(&cpusUsage, rows);
 
-        // Printer
-        print_cpus_usage(&cpusUsage, rows);
+        // lock mtxUsage before writing into usage array
+        pthread_mutex_lock(&mtxUsage);
+        get_cpus_usage(&usage, rows);
+        pthread_mutex_unlock(&mtxUsage);
+
+        // signal condUsage condition, that tells Printer it can start reading from usage array
+        pthread_cond_signal(&condUsage);
+
+        pthread_mutex_unlock(&mtxData);
+    }
+
+    return 0;
+}
+
+void *printer_loop()
+{   
+    while (1)
+    {
+        pthread_mutex_lock(&mtxUsage);        
+        pthread_cond_wait(&condUsage, &mtxUsage); // wait for Analyzer to send signal that usage array is ready to read from
+        
+        if (stop)
+        {
+            pthread_mutex_unlock(&mtxUsage);
+            return 0;
+        }
+
+        print_cpus_usage(&usage, rows);
         putchar('\n');
 
-        clock_t stop = clock();
-        float seconds = (float)(stop - start) / (CLOCKS_PER_SEC);
-
-        printf("Loop iteration took: %fms\n", seconds * 1000);
-
-        sleep(1);
+        pthread_mutex_unlock(&mtxUsage);
     }
 
     return 0;
@@ -66,17 +124,51 @@ int main()
 {
     open_proc_stat();
 
-    // pthread_t readerThread;
-    // pthread_create(&readerThread, NULL, &reader_loop, NULL);
 
     signal(SIGINT, sigint_handler);
     signal(SIGTERM, sigterm_handler);
 
-    reader_loop();
+    pthread_mutex_init(&mtxData, NULL);
+    pthread_cond_init(&condData, NULL);
 
-    // pthread_join(readerThread, NULL);
+    pthread_mutex_init(&mtxUsage, NULL);
+    pthread_cond_init(&condUsage, NULL);
 
-    printf("ReaderThread joined.\n");
+    pthread_t thd[3];
+
+    enum enumThd
+    {
+        Reader = 0,
+        Analyzer,
+        Printer
+    };
+
+    for (size_t i = 0; i < 3; i++)
+    {
+        switch (i)
+        {
+            case Reader:
+                pthread_create(&thd[i], NULL, &reader_loop, NULL);
+                break;
+            case Analyzer:
+                pthread_create(&thd[i], NULL, &analyzer_loop, NULL);
+                break;
+            case Printer:
+                pthread_create(&thd[i], NULL, &printer_loop, NULL);
+                break;
+        }
+    }
+    
+
+    for (size_t i = 0; i < 3; i++)
+    {
+        pthread_join(thd[i], NULL);
+        
+        printf("Thread %ld has joined successufully.\n", i);
+    }
+
+    pthread_mutex_destroy(&mtxData);    
+    pthread_mutex_destroy(&mtxUsage);
 
     cleanup();
 

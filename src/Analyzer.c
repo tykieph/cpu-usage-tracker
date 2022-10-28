@@ -12,7 +12,7 @@ typedef struct
     ulong softirq;  // servicing softirqs
     ulong steal;    // counts the ticks spent executing other virtual hosts
     ulong guest;    // counts the time spent running a virtual CPU for guest operating systems under the control of the Linux kernel
-    ulong guestnice;// Time spent running a niced guest (virtual CPU for guest operating systems under the control of the Linux kernel)
+    ulong guestnice;// time spent running a niced guest (virtual CPU for guest operating systems under the control of the Linux kernel)
     float usage;    // core usage   
 } CpuStat;
 
