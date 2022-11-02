@@ -6,9 +6,8 @@ typedef struct
     size_t rows, cols;  
 } Output;
 
-FILE *mFile;
-size_t mHardwareConcurrency;
-Output mBuffer;
+static FILE *mFile;
+static Output mBuffer;
 /********************************************************************************/
 int read_proc_stat(char ***buffer, size_t rows, size_t cols);
 void alloc_buffer(char ***buffer, size_t rows, size_t cols);
