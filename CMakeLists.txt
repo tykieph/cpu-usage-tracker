@@ -41,7 +41,13 @@ if (BUILD_TESTS)
     add_executable(tests
         tests/tests.cpp
         src/Reader.c
-        tests/Reader_TEST.cpp)
+        src/Analyzer.c
+        src/Printer.c
+        src/Logger.c
+        src/SafeQueue.c        
+        tests/Reader_TEST.cpp
+        tests/Analyzer_TEST.cpp
+        tests/SafeQueue_TEST.cpp)
     target_include_directories(tests PUBLIC include src)
     target_link_libraries(tests pthread gtest_main gmock_main)
 endif()

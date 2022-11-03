@@ -54,40 +54,33 @@ int main(void)
 
     pthread_t thd[3];
 
-    // enum enumThd
-    // {
-    //     Reader = 0,
-    //     Analyzer,
-    //     Printer
-    // };
+    enum enumThd
+    {
+        Reader = 0,
+        Analyzer,
+        Printer
+    };
 
-    // for (size_t i = 0; i < 3; i++)
-    // {
-    //     switch (i)
-    //     {
-    //         case Reader:
-    //             pthread_create(&thd[i], NULL, &reader_loop, NULL);
-    //             LOG("main", "Created Reader thread");
-    //             break;
-    //         case Analyzer:
-    //             pthread_create(&thd[i], NULL, &analyzer_loop, NULL);
-    //             LOG("main", "Created Analyzer thread");
-    //             break;
-    //         case Printer:
-    //             pthread_create(&thd[i], NULL, &printer_loop, NULL);
-    //             LOG("main", "Created Printer thread");
-    //             break;
-    //     }
-    // }
+    for (size_t i = 0; i < 3; i++)
+    {
+        switch (i)
+        {
+            case Reader:
+                pthread_create(&thd[i], NULL, &reader_loop, NULL);
+                LOG("main", "Created Reader thread");
+                break;
+            case Analyzer:
+                pthread_create(&thd[i], NULL, &analyzer_loop, NULL);
+                LOG("main", "Created Analyzer thread");
+                break;
+            case Printer:
+                pthread_create(&thd[i], NULL, &printer_loop, NULL);
+                LOG("main", "Created Printer thread");
+                break;
+        }
+    }
 
 
-    int a = 0, b = 1, c = 2;
-
-    pthread_create(&thd[0], NULL, &test, &a);
-    pthread_create(&thd[1], NULL, &test, &b);
-    pthread_create(&thd[2], NULL, &test, &c);        
-
-    // sleep(1);
     for (size_t i = 0; i < 3; i++)
     {
         pthread_join(thd[i], NULL);
@@ -99,19 +92,6 @@ int main(void)
     }
 
     cleanup();
-
-    return 0;
-}
-/********************************************************************************/
-void *test(void *arg)
-{
-    int n = *((int *)arg);
-    for (size_t i = 0; i < 50; i++)
-    {
-        char buff[32];
-        sprintf(buff, "Thread %d writing", n);
-        LOG("test", buff);
-    }
 
     return 0;
 }
