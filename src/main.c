@@ -16,7 +16,7 @@
 #endif
 
 #ifdef USE_LOGGER
-    #define LOG(from, msg) logger_logMsg(from, msg)
+    #define LOG(from, msg) logger_postMsg(from, msg)
 #else
     #define LOG(from, msg) (void)from
 #endif
@@ -34,6 +34,10 @@ size_t rows;
 sem_t semUsage;
 sem_t semPrinter;
 float *usage;
+
+#ifdef USE_LOGGER
+pthread_t loggerThd;
+#endif
 /********************************************************************************/
 void *reader_loop(void *arg);
 void *analyzer_loop(void *arg);
@@ -50,38 +54,40 @@ int main(void)
 
     pthread_t thd[3];
 
-    enum enumThd
-    {
-        Reader = 0,
-        Analyzer,
-        Printer
-    };
+    // enum enumThd
+    // {
+    //     Reader = 0,
+    //     Analyzer,
+    //     Printer
+    // };
 
-    for (size_t i = 0; i < 3; i++)
-    {
-        switch (i)
-        {
-            case Reader:
-                pthread_create(&thd[i], NULL, &reader_loop, NULL);
-                LOG("main", "Created Reader thread");
-                break;
-            case Analyzer:
-                pthread_create(&thd[i], NULL, &analyzer_loop, NULL);
-                LOG("main", "Created Analyzer thread");
-                break;
-            case Printer:
-                pthread_create(&thd[i], NULL, &printer_loop, NULL);
-                LOG("main", "Created Printer thread");
-                break;
-        }
-    }
+    // for (size_t i = 0; i < 3; i++)
+    // {
+    //     switch (i)
+    //     {
+    //         case Reader:
+    //             pthread_create(&thd[i], NULL, &reader_loop, NULL);
+    //             LOG("main", "Created Reader thread");
+    //             break;
+    //         case Analyzer:
+    //             pthread_create(&thd[i], NULL, &analyzer_loop, NULL);
+    //             LOG("main", "Created Analyzer thread");
+    //             break;
+    //         case Printer:
+    //             pthread_create(&thd[i], NULL, &printer_loop, NULL);
+    //             LOG("main", "Created Printer thread");
+    //             break;
+    //     }
+    // }
 
-    // int a = 0, b = 1, c = 2;
 
-    // pthread_create(&thd[0], NULL, &test, &a);
-    // pthread_create(&thd[1], NULL, &test, &b);
-    // pthread_create(&thd[2], NULL, &test, &c);        
+    int a = 0, b = 1, c = 2;
 
+    pthread_create(&thd[0], NULL, &test, &a);
+    pthread_create(&thd[1], NULL, &test, &b);
+    pthread_create(&thd[2], NULL, &test, &c);        
+
+    // sleep(1);
     for (size_t i = 0; i < 3; i++)
     {
         pthread_join(thd[i], NULL);
@@ -113,9 +119,14 @@ void *test(void *arg)
 void init()
 {
     #ifdef USE_LOGGER
-    if (logger_init())
+    if (!logger_init())
     {
         fprintf(stderr, "Logger error: cannot create Logger instance.\n");
+    }
+    else
+    {
+        pthread_create(&loggerThd, NULL, &logger_start, NULL);
+        LOG("main", "Logger thread created successufully");
     }
     #endif
 
@@ -139,7 +150,7 @@ void init()
 /********************************************************************************/
 void cleanup()
 {
-    printf("Cleaning up...\n");
+    LOG("main", "App cleanup...");
 
     // destroy semaphores
     sem_destroy(&semReader);
@@ -152,18 +163,19 @@ void cleanup()
     destroy_analyzer();
     destroy_reader();
 
+    // stop logger
+    #ifdef USE_LOGGER
+    LOG("main", "Stopping logger...");
+    logger_stop();
+    pthread_join(loggerThd, NULL);
+    #endif
+
     clock_gettime(CLOCK_MONOTONIC, &finish);
 
     double elapsed = finish.tv_sec - start.tv_sec;
     elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
-    printf("Program execution took: %f seconds.\n", elapsed);
-
-    LOG("main", "App cleanup. Stopping logger...");
-
-    #ifdef USE_LOGGER
-    logger_stop();
-    #endif
+    printf("Program execution took: %f seconds.\n", elapsed);    
 }
 /********************************************************************************/
 void *reader_loop(void *arg)

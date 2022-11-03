@@ -9,10 +9,10 @@ typedef struct
 static FILE *mFile;
 static Output mBuffer;
 /********************************************************************************/
-int read_proc_stat(char ***buffer, size_t rows, size_t cols);
-void alloc_buffer(char ***buffer, size_t rows, size_t cols);
-void dealloc_buffer(char ***buffer, size_t rows);
-int close_proc_stat(void);
+static int read_proc_stat(char ***buffer, size_t rows, size_t cols);
+static void alloc_buffer(char ***buffer, size_t rows, size_t cols);
+static void dealloc_buffer(char ***buffer, size_t rows);
+static int close_proc_stat(void);
 /********************************************************************************/
 void get_buffer(char ***buffer, size_t *rows)
 {
