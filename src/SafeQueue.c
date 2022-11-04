@@ -11,8 +11,8 @@
 /********************************************************************************/
 /* typical (non concurrent safe) queue implementation */
 static Queue *init(void);
-static int enqueue(Queue *q, char *data);
-static char *dequeue(Queue *q);
+static int enqueue(Queue *q, char *data, const size_t size);
+static int dequeue(Queue *q, char *data, const size_t size);
 static int is_empty(Queue *q);
 /********************************************************************************/
 Queue *queue_init()
@@ -25,17 +25,17 @@ Queue *queue_init()
     return q;
 }
 /********************************************************************************/
-void queue_push(Queue *q, char *data)
+void queue_push(Queue *q, char *data, const size_t size)
 {
     pthread_mutex_lock(&q->mtx);
 
-    enqueue(q, data);
+    enqueue(q, data, size);
 
     pthread_cond_signal(&q->cond);
     pthread_mutex_unlock(&q->mtx);
 }
 /********************************************************************************/
-void queue_wait_pop(Queue *q, char **buffer)
+void queue_wait_pop(Queue *q, char *buffer, const size_t size)
 {
     pthread_mutex_lock(&q->mtx);
 
@@ -44,15 +44,12 @@ void queue_wait_pop(Queue *q, char **buffer)
         pthread_cond_wait(&q->cond, &q->mtx);
     }
 
-    char *tmp = dequeue(q);
-
-    *buffer = malloc(sizeof(char) * LOG_ENTRY_MAX);
-    strncpy(*buffer, tmp, LOG_ENTRY_MAX);
+    dequeue(q, buffer, size);
 
     pthread_mutex_unlock(&q->mtx);
 }
 /********************************************************************************/
-int queue_timedwait_pop(Queue *q, char **buffer, unsigned int sec)
+int queue_timedwait_pop(Queue *q, char *buffer, const size_t size, const uint sec)
 {
     pthread_mutex_lock(&q->mtx);
 
@@ -70,10 +67,7 @@ int queue_timedwait_pop(Queue *q, char **buffer, unsigned int sec)
         }
     }
 
-    char *tmp = dequeue(q);
-
-    *buffer = malloc(sizeof(char) * LOG_ENTRY_MAX);
-    strncpy(*buffer, tmp, LOG_ENTRY_MAX);
+    dequeue(q, buffer, size);
 
     pthread_mutex_unlock(&q->mtx);
 
@@ -100,14 +94,14 @@ Queue *init()
     return q; 
 }
 /********************************************************************************/
-int enqueue(Queue *q, char *data)
+int enqueue(Queue *q, char *data, const size_t size)
 {
     Node *newNode = malloc(sizeof(Node));
     if (newNode == NULL)
         return 0;
 
-    newNode->data = malloc(sizeof(char) * LOG_ENTRY_MAX);
-    strncpy(newNode->data, data, LOG_ENTRY_MAX);
+    newNode->data = malloc(sizeof(char) * size);
+    strncpy(newNode->data, data, size);
 
     newNode->next = NULL;
     if (q->tail != NULL)
@@ -126,11 +120,11 @@ int enqueue(Queue *q, char *data)
     return 1;
 }
 /********************************************************************************/
-char *dequeue(Queue *q)
+int dequeue(Queue *q, char *data, const size_t size)
 {
     if (q->head == NULL)
     {
-        return "";
+        return 0;
     }
 
     Node *oldHead = q->head;
@@ -141,15 +135,14 @@ char *dequeue(Queue *q)
         q->tail = NULL;
     }
 
-    char *data = malloc(sizeof(char) * LOG_ENTRY_MAX);
-    strncpy(data, oldHead->data, LOG_ENTRY_MAX);
+    strncpy(data, oldHead->data, size);
 
     free(oldHead->data);    
     free(oldHead);
 
     q->size -= 1;
 
-    return data;
+    return 1;
 }
 /********************************************************************************/
 int is_empty(Queue *q)

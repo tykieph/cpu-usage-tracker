@@ -50,7 +50,6 @@ static void cleanup(void);
 int main(void)
 {
     init();
-
     pthread_t thd[3];
 
     enum enumThd
@@ -116,7 +115,7 @@ void init()
     open_proc_stat();
 
     // handle signals
-    signal(SIGINT, sig_handler);
+    // signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);
 
     // init semaphores
@@ -153,8 +152,7 @@ void cleanup()
 
     double elapsed = (double)(finish.tv_sec - start.tv_sec);
     elapsed += (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-
-    printf("Program execution took: %f seconds.\n", elapsed);    
+    // printf("Program execution took: %f seconds.\n", elapsed);    
 }
 /********************************************************************************/
 void *reader_loop(void *arg)
@@ -261,7 +259,7 @@ void sig_handler(int signum)
     else if (signum == SIGTERM)
     {
         LOG("Signal handler", "SIGTERM signal received. Closing app...");   
-    }
+    } 
 
     stop = 1;
 }

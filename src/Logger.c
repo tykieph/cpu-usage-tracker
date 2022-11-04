@@ -4,6 +4,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "SafeQueue.h"
 
@@ -14,7 +15,6 @@ static const char *fileName = "CUT_debug.log";
 static const char *directory = "../tmp";
 static FILE *mFile = NULL;
 
-static pthread_mutex_t mtxSave; // protect file save
 static Queue *q;
 
 static unsigned int stop; // this flag tells logger it can stop executing main loop if queue is empty 
@@ -39,7 +39,6 @@ int logger_init()
     if (mFile != NULL)
         return 0;
 
-    pthread_mutex_init(&mtxSave, NULL);
     q = queue_init();
 
     clock_gettime(CLOCK_MONOTONIC, &timer);    
@@ -52,13 +51,11 @@ void *logger_start(void *arg)
     (void)arg;
     while (!stop || !queue_empty(q))
     {
-        char *buff;
-        if(queue_timedwait_pop(q, &buff, 1))
+        char buff[LOG_ENTRY_MAX];
+        if(queue_timedwait_pop(q, buff, LOG_ENTRY_MAX, 1))
         {
             continue;
         }
-        // queue_wait_pop(q, &buff);
-
 
         // save log entry to the log file
         fprintf(mFile, "%s", buff);
@@ -87,6 +84,8 @@ int logger_stop()
     fclose(mFile);
     mFile = NULL;
 
+    free(q);
+
     return 1;
 }
 /********************************************************************************/
@@ -98,7 +97,7 @@ int logger_postMsg(char *from, char *message)
     char buff[LOG_ENTRY_MAX];
     snprintf(buff, LOG_ENTRY_MAX, "%s [%16.16s] %.64s\n", currTime, from, message);
 
-    queue_push(q, buff);
+    queue_push(q, buff, LOG_ENTRY_MAX);
 
     return 1;
 }

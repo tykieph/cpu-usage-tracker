@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pthread.h>
+#include <sys/types.h>
 
 #define LOG_ENTRY_MAX 128
 
@@ -21,10 +22,10 @@ typedef struct
 } Queue;
 
 
-/* concurrent safe queue implementation */
+/* thread safe queue implementation */
 
 Queue *queue_init(void);
-void queue_push(Queue *q, char *data);
-void queue_wait_pop(Queue *q, char **buffer);
-int queue_timedwait_pop(Queue *q, char **buffer, unsigned int sec);
+void queue_push(Queue *q, char *data, const size_t size);
+void queue_wait_pop(Queue *q, char *buffer, const size_t size);
+int queue_timedwait_pop(Queue *q, char *buffer, const size_t size, const uint sec);
 int queue_empty(Queue *q);

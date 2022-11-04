@@ -42,7 +42,7 @@ TEST_P(SafeQueueTest, Push)
             char tmp[32] = "testing...testing..."; 
 
             for (size_t i = 0; i < 50; i++)
-                queue_push(q, tmp);
+                queue_push(q, tmp, LOG_ENTRY_MAX);
 
             return (void *)NULL; 
         }, q);
@@ -69,7 +69,7 @@ TEST_P(SafeQueueTest, Pop)
             char tmp[32] = "testing...testing..."; 
 
             for (size_t i = 0; i < 50; i++)
-                queue_push(q, tmp);
+                queue_push(q, tmp, LOG_ENTRY_MAX);
 
             return (void *)NULL; 
         }, q);
@@ -80,18 +80,19 @@ TEST_P(SafeQueueTest, Pop)
         pthread_join(thd, NULL);
     }
 
-    char *buff;
+    char buff[LOG_ENTRY_MAX];
     for (size_t i = 0; i < 30; i++)
     {
-        queue_wait_pop(q, &buff);
+        queue_wait_pop(q, buff, LOG_ENTRY_MAX);
     }
 
     EXPECT_EQ(threads.size() * 50 - 30, q->size);
     
     while (!queue_empty(q))
     {
-        queue_timedwait_pop(q, &buff, 1);
+        queue_timedwait_pop(q, buff, LOG_ENTRY_MAX, 1);
     }
+
 
     EXPECT_EQ(0, q->size);
     EXPECT_EQ(1, queue_empty(q));
