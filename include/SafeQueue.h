@@ -1,7 +1,7 @@
 #pragma once
 
 #include <pthread.h>
-#include <sys/types.h>
+#include <stdlib.h>
 
 #define LOG_ENTRY_MAX 128
 

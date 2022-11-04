@@ -16,7 +16,8 @@ static int close_proc_stat(void);
 /********************************************************************************/
 void get_buffer(char ***buffer, size_t *rows)
 {
-    read_proc_stat(&mBuffer.data, mBuffer.rows, mBuffer.cols);
+    if (!read_proc_stat(&mBuffer.data, mBuffer.rows, mBuffer.cols))
+        return; // error occured
 
     *buffer = mBuffer.data;
     *rows = mBuffer.rows;
@@ -24,7 +25,8 @@ void get_buffer(char ***buffer, size_t *rows)
 /********************************************************************************/
 void get_buffer_without_header(char ***buffer, size_t *rows)
 {
-    read_proc_stat(&mBuffer.data, mBuffer.rows, mBuffer.cols);
+    if (!read_proc_stat(&mBuffer.data, mBuffer.rows, mBuffer.cols))
+        return; // error occured
 
     *buffer = &mBuffer.data[1];
     *rows = mBuffer.rows - 1;
@@ -51,18 +53,21 @@ int open_proc_stat()
     if (mFile == NULL)
     {
         printf("ERROR: cannot open /proc/stat file\n");
-        return 1;
+        return 0;
     }
 
     mBuffer.rows = (size_t)sysconf(_SC_NPROCESSORS_ONLN) + 1;
     mBuffer.cols = 256;
     alloc_buffer(&mBuffer.data, mBuffer.rows, mBuffer.cols);
 
-    return 0;    
+    return 1;    
 }
 /********************************************************************************/
 int read_proc_stat(char ***buffer, size_t rows, size_t cols)
 {
+    if (mFile == NULL)
+        return 0;
+
     fseek(mFile, 0, SEEK_SET);
     fflush(mFile);
 
@@ -72,19 +77,22 @@ int read_proc_stat(char ***buffer, size_t rows, size_t cols)
         if (fgets((*buffer)[i], (int)cols, mFile) == NULL)
         {
             printf("ERROR: an error occured while reading /proc/stat file\n");
-            return 1;
+            return 0;
         }
     }
 
-    return 0;
+    return 1;
 }
 /********************************************************************************/
 int close_proc_stat()
 {
+    if (mFile == NULL)
+        return 0;
+
     fclose(mFile);
     mFile = NULL;
 
-    return 0;
+    return 1;
 }
 /********************************************************************************/
 void destroy_reader()
