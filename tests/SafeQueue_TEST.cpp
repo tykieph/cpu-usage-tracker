@@ -97,4 +97,4 @@ TEST_P(SafeQueueTest, Pop)
     EXPECT_EQ(1, queue_empty(q));
 }
 /********************************************************************************/
-INSTANTIATE_TEST_CASE_P(PushPopTest, SafeQueueTest, testing::Range((size_t)1, (size_t)std::thread::hardware_concurrency()));
+INSTANTIATE_TEST_SUITE_P(PushPopTest, SafeQueueTest, testing::Range((size_t)1, (size_t)std::thread::hardware_concurrency()));

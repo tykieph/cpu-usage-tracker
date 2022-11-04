@@ -54,7 +54,7 @@ int open_proc_stat()
         return 1;
     }
 
-    mBuffer.rows = sysconf(_SC_NPROCESSORS_ONLN) + 1;
+    mBuffer.rows = (size_t)sysconf(_SC_NPROCESSORS_ONLN) + 1;
     mBuffer.cols = 256;
     alloc_buffer(&mBuffer.data, mBuffer.rows, mBuffer.cols);
 
@@ -69,7 +69,7 @@ int read_proc_stat(char ***buffer, size_t rows, size_t cols)
     // read first (rows) lines of the /proc/stat file into Buffer
     for (size_t i = 0; i < rows; i++)
     {
-        if (fgets((*buffer)[i], cols, mFile) == NULL)
+        if (fgets((*buffer)[i], (int)cols, mFile) == NULL)
         {
             printf("ERROR: an error occured while reading /proc/stat file\n");
             return 1;

@@ -17,13 +17,12 @@ typedef struct
 } CpuStat;
 
 
-size_t mTotalCpus;
-CpuStat *mCpusStat;
-float *mUsage;
+static CpuStat *mCpusStat;
+static float *mUsage;
 /********************************************************************************/
-ulong sum_cpustat_idle(const CpuStat *cpu);
-ulong sum_cpustat_non_idle(const CpuStat *cpu);
-void process_line(const char *line, CpuStat *cpu);
+static ulong sum_cpustat_idle(const CpuStat *cpu);
+static ulong sum_cpustat_non_idle(const CpuStat *cpu);
+static void process_line(const char *line, CpuStat *cpu);
 /********************************************************************************/
 void process_line(const char *line, CpuStat *cpu)
 {
@@ -43,7 +42,7 @@ void process_line(const char *line, CpuStat *cpu)
     ulong totalDiff = currTotal - prevTotal;
     ulong idleDiff  = currIdle - prevIdle;
 
-    cpu->usage = (float)(totalDiff - idleDiff) / totalDiff;
+    cpu->usage = (float)(totalDiff - idleDiff) / (float)totalDiff;
 }
 /********************************************************************************/
 void process_data(char ***data, const size_t rows)

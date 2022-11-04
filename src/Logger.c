@@ -20,7 +20,7 @@ static Queue *q;
 static unsigned int stop; // this flag tells logger it can stop executing main loop if queue is empty 
 static unsigned int done; // this flag tells if logger finished executing main loop
 
-struct timespec timer;
+static struct timespec timer;
 /********************************************************************************/
 /* initialize logger - open log file (create if not present), initialize some vars */
 static int init(const char *flags);
@@ -152,8 +152,8 @@ double time_diff(struct timespec *start)
     struct timespec finish;
     clock_gettime(CLOCK_MONOTONIC, &finish);
 
-    double elapsed = finish.tv_sec - start->tv_sec;
-    elapsed += (finish.tv_nsec - start->tv_nsec) / 1000000000.0;
+    double elapsed = (double)(finish.tv_sec - start->tv_sec);
+    elapsed += (double)(finish.tv_nsec - start->tv_nsec) / 1000000000.0;
 
     return elapsed;
 }

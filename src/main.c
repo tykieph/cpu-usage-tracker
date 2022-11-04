@@ -22,31 +22,30 @@
 #endif
 
 /********************************************************************************/
-volatile sig_atomic_t stop = 0;
-struct timespec start, finish;
+static volatile sig_atomic_t stop = 0;
+static struct timespec start, finish;
 
-sem_t semReader;
-sem_t semAnalyzer;
+static sem_t semReader;
+static sem_t semAnalyzer;
 
-char **data;
-size_t rows;
+static char **data;
+static size_t rows;
 
-sem_t semUsage;
-sem_t semPrinter;
-float *usage;
+static sem_t semUsage;
+static sem_t semPrinter;
+static float *usage;
 
 #ifdef USE_LOGGER
-pthread_t loggerThd;
+static pthread_t loggerThd;
 #endif
 /********************************************************************************/
-void *reader_loop(void *arg);
-void *analyzer_loop(void *arg);
-void *printer_loop(void *arg);
+static void *reader_loop(void *arg);
+static void *analyzer_loop(void *arg);
+static void *printer_loop(void *arg);
 
-void sig_handler(int signum);
-void init(void);
-void cleanup(void);
-void *test(void *arg);
+static void sig_handler(int signum);
+static void init(void);
+static void cleanup(void);
 /********************************************************************************/
 int main(void)
 {
@@ -152,8 +151,8 @@ void cleanup()
 
     clock_gettime(CLOCK_MONOTONIC, &finish);
 
-    double elapsed = finish.tv_sec - start.tv_sec;
-    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    double elapsed = (double)(finish.tv_sec - start.tv_sec);
+    elapsed += (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
     printf("Program execution took: %f seconds.\n", elapsed);    
 }
